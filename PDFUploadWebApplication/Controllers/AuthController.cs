@@ -139,16 +139,23 @@ public class AuthController : Controller
     [HttpGet]
     public async Task<IActionResult> Logout()
     {
-        // ✅ Sign out user from authentication system
+        // ✅ Sign out from authentication system
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-        // ✅ Clear session data
+        // ✅ Clear session completely
         HttpContext.Session.Clear();
 
-        return RedirectToAction("Login", "Auth"); // ✅ Redirect to login page
+        // ✅ Expire JWT token by removing the cookie
+        var cookieOptions = new CookieOptions
+        {
+            Expires = DateTime.UtcNow.AddMinutes(-1), // ✅ Expire instantly upon logout
+            HttpOnly = true, // ✅ Secure cookie
+            IsEssential = true
+        };
+
+        Response.Cookies.Delete("JwtToken"); // ✅ Best way to delete cookies
+        Response.Cookies.Append("JwtToken", "", cookieOptions); // ✅ Ensure token is expired
+
+        return RedirectToAction("Login", "Auth"); // ✅ Redirect user to login page
     }
-
-
-
-
 }
