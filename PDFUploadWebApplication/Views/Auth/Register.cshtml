@@ -67,8 +67,49 @@
         </div>
     </div>
 </div>
-
+<div id="validationPopup" class="alert alert-danger d-none position-fixed top-0 start-50 translate-middle-x mt-2" style="z-index: 1050;">
+    <p id="validationMessage"></p>
+</div>
 <script>
+    document.getElementById("registerForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const data = {
+            username: document.getElementById("username").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+            confirmPassword: document.getElementById("confirmPassword").value
+        };
+
+        const response = await fetch('/Auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            window.location.href = "/Auth/login"; // ✅ Redirects to login page
+        } else {
+            const result = await response.json();
+            console.error(result);
+
+            // ✅ Show validation error in a popup for 5 seconds
+            const popup = document.getElementById("validationPopup");
+            const message = document.getElementById("validationMessage");
+
+            message.innerText = result.message || "Registration failed due to unknown error.";
+            popup.classList.remove("d-none");
+
+            setTimeout(() => {
+                popup.classList.add("d-none"); // ✅ Hide after 5 seconds
+            }, 5000);
+        }
+    });
+</script>
+
+@* <script>
     document.getElementById("registerForm").addEventListener("submit", async function(event) {
         event.preventDefault();
 
@@ -96,7 +137,7 @@
         }
     });
 </script>
-
+ *@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
