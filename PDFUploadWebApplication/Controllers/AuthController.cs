@@ -83,7 +83,11 @@ public class AuthController : Controller
             return View(model);
         }
 
-        // Check if the username already exists
+        // ✅ Convert username and email to lowercase for consistency
+        model.Username = model.Username.ToLower();
+        model.Email = model.Email.ToLower();
+
+        // Check if the username already exists (case-insensitive)
         var existingUser = await _userRepository.GetByUsernameAsync(model.Username);
         if (existingUser != null)
         {
@@ -96,8 +100,8 @@ public class AuthController : Controller
 
         var newUser = new User
         {
-            Username = model.Username,
-            Email = model.Email,
+            Username = model.Username,  // ✅ Ensure stored username is lowercase
+            Email = model.Email,        // ✅ Ensure stored email is lowercase
             PasswordHash = hash,
             PasswordSalt = salt
         };
@@ -106,8 +110,6 @@ public class AuthController : Controller
 
         return RedirectToAction("Login", "Auth");
     }
-
-
 
 
 
