@@ -1,0 +1,102 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+
+@model PDFUploadWebApplication.Core.DTO.LoginDto
+@{
+    ViewData["Title"] = "Login";
+}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-header text-center bg-primary text-white">
+                    <h4>Login</h4>
+                </div>
+                <div class="card-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label asp-for="Username" class="form-label"></label>
+                            <input asp-for="Username" class="form-control" id="username" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" type="password" id="password" />
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <small>Don't have an account? <a asp-action="Register" asp-controller="Auth">Register here</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+            document.getElementById("loginForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const data = {
+            username: document.getElementById("username").value.trim(),
+            password: document.getElementById("password").value.trim()
+        };
+
+        try {
+            const response = await fetch('/Auth/login', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            console.log("Response Status:", response.status);
+
+            if (!response.ok) {
+                let errorText;
+                try {
+                    errorText = await response.text(); // Fallback if JSON fails
+                    console.error("Error response body:", errorText);
+                } catch (parseError) {
+                    console.error("Failed to parse error response:", parseError);
+                }
+
+                alert(`Login failed: ${response.status}`);
+                return;
+            }
+
+            const result = await response.json();
+            console.log("Login successful:", result);
+
+            if (result.token) {
+                localStorage.setItem("jwtToken", result.token);
+
+                // ✅ Attach token in URL to avoid 401 error
+                window.location.href = `/Document/Upload?token=${result.token}`;
+            } else {
+                alert("Authentication succeeded, but no token received.");
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+            alert("A network error occurred. Please check your connection and try again.");
+        }
+    });
+
+
+
+
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
